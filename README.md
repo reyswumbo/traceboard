@@ -46,7 +46,7 @@ Ketiga fitur tersebut dirancang agar terasa seperti satu produk yang utuh dan *p
   - Notifikasi karena statistik per aplikasi bergantung pada izin Akses Penggunaan Aplikasi.
 - **Bahasa**: Seluruh antarmuka menggunakan Bahasa Indonesia.
 - **Mode gelap & terang** (mengikuti sistem, mendukung *dynamic color* di Android 12+).
-- **Dua tema**: **Default** (Material You klasik) dan **Liquid Ink** (teal/cyan yang tajam). Pilih tema dari ikon palet di dasbor.
+- **Dua tema**: **Default** (Material You klasik) dan **Ink** (teal/cyan yang tajam). Pilih tema dari ikon palet 🎨 di dasbor.
 - Aktivitas di negara kosong (*empty state*) dan instruksi izin yang jelas.
 
 ---
@@ -157,7 +157,7 @@ Statistik penggunaan aplikasi membutuhkan akses khusus Android:
 2. Pilih aplikasi **Traceboard** dan aktifkan **Akses Penggunaan Aplikasi** (*Usage Access*).
 3. Kembali ke aplikasi, lalu tarik data (tombol refresh).
 
-- **Periode**: chip cepat Hari Ini / 7 Hari / Semua, plus dropdown **1–12 bulan** atau **1 tahun**.
+- **Periode**: chip cepat Hari Ini / 7 Hari / Semua, plus dropdown **1–12 bulan** dan **1 tahun**.
 - Waktu ditampilkan presisi: contoh `1 jam 24 menit 17 detik` atau `45 detik`.
 - Buka *bottom sheet* pada sebuah aplikasi untuk detailnya.
 
@@ -234,7 +234,7 @@ Hasil build:
 ## Batasan Android API
 
 - Statistik penggunaan aplikasi bergantung pada **Akses Penggunaan Aplikasi** yang harus diaktifkan manual oleh pengguna.
-- Periode "Semua" dibatasi oleh data historis yang disimpan sistem Android.
+- Periode "Semua" dibatasi oleh data historis yang disimpan sistem Android (**maksimal ~6 bulan**, batasan sistem Android; data lebih lama otomatis dihapus oleh OS).
 - Statistik battery/storage **per aplikasi** tidak tersedia lewat API publik yang stabil.
 - Membaca clipboard di latar belakang penuh dibatasi sistem sejak Android 10; aplikasi merekam clipboard lewat **foreground service** saat perekaman **Mulai** menyala, dan berhenti bila aplikasi dimatikan total atau tombol Berhenti ditekan.
 - Penghitungan kata menulis membutuhkan **layanan aksesibilitas** yang diaktifkan manual oleh pengguna.

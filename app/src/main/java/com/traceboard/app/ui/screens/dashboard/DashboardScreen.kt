@@ -167,7 +167,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                             Text(
                                 text = when (mode) {
                                     ThemeMode.DEFAULT -> "Default"
-                                    ThemeMode.LIQUID_INK -> "Liquid Ink"
+                                    ThemeMode.INK -> "Ink"
                                 },
                                 modifier = Modifier.padding(start = 8.dp)
                             )
