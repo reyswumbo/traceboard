@@ -93,13 +93,7 @@ fun WritingScreen(viewModel: WritingViewModel) {
             ) {
                 StatCard(label = "Kata", value = stats.wordCount.toString(), modifier = Modifier.weight(1f))
                 StatCard(label = "Karakter", value = stats.charCount.toString(), modifier = Modifier.weight(1f))
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
                 StatCard(label = "Huruf", value = stats.letterCount.toString(), modifier = Modifier.weight(1f))
-                StatCard(label = "Spasi", value = stats.spaceCount.toString(), modifier = Modifier.weight(1f))
             }
 
             Row(
@@ -191,7 +185,7 @@ private fun TrackedWordRow(
                 modifier = Modifier.weight(1f).padding(start = 12.dp)
             )
             Text(
-                text = "$countx",
+                text = "${count}x",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )

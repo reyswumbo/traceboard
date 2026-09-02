@@ -29,7 +29,7 @@ Ketiga fitur tersebut dirancang agar terasa seperti satu produk yang utuh dan *p
   - Pencarian dan pengurutan (terbaru di atas).
   - **Impor & Ekspor** dalam format JSON (melalui *system file picker*).
 - **Menulis & Analitik Kata**:
-  - Penghitungan *real-time*: kata, karakter, huruf, dan spasi.
+  - Penghitungan *real-time*: kata, karakter, dan huruf (spasi tidak dihitung sebagai kata).
   - Pelacakan kata kunci (**tidak membedakan huruf besar/kecil**).
   - Tambah, hapus, dan reset hitungan kata terlacak.
 - **Penggunaan Aplikasi**:
@@ -48,13 +48,12 @@ Ketiga fitur tersebut dirancang agar terasa seperti satu produk yang utuh dan *p
 
 Aturan yang digunakan untuk statistik menulis didokumentasikan secara eksplisit agar konsisten dengan contoh pada *brief*:
 
-- **Total kata**: dihitung dengan memecah teks berdasarkan spasi/whitespace dan menghitung token yang **tidak kosong**.
+- **Total kata**: dihitung dengan memecah teks berdasarkan spasi/whitespace dan menghitung token yang **tidak kosong**. Spasi **tidak** ikut dihitung sebagai kata; spasi berlebih juga tidak menambah jumlah kata.
 - **Total karakter**: seluruh jumlah karakter pada teks, **termasuk spasi**.
 - **Total huruf**: jumlah karakter yang merupakan huruf (`isLetter()`).
-- **Total spasi**: jumlah karakter spasi (`' '`).
 - **Pelacakan kata kunci**: pencocokan **tidak peka huruf besar/kecil** menggunakan ekspresi reguler dengan `(?i)` dan `Regex.escape` pada kata kunci.
 
-Contoh: teks `maaf maaf` menghasilkan **2 kata**, **8 huruf**, **9 karakter** (termasuk spasi), dan kata terlacak `maaf` bernilai **2×**. Teks `Maaf MAAF maAf` juga tetap dihitung sebagai kata `maaf` sebanyak **3×**.
+Contoh: teks `maaf maaf` menghasilkan **2 kata**, **8 huruf**, **9 karakter** (termasuk spasi; spasi tidak dihitung sebagai kata), dan kata terlacak `maaf` bernilai **2×**. Teks `Maaf MAAF maAf` juga tetap dihitung sebagai kata `maaf` sebanyak **3×**.
 
 ---
 

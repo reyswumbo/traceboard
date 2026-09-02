@@ -11,9 +11,8 @@ import com.traceboard.app.data.repository.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -30,11 +29,11 @@ class ClipboardViewModel(
     private val _searchQuery = MutableStateFlow("")
     private val _items = MutableStateFlow<List<ClipboardItem>>(emptyList())
 
-    val items: StateFlow<List<ClipboardItem>> = combine(_searchQuery, _items) { query, all ->
+    val items: Flow<List<ClipboardItem>> = combine(_searchQuery, _items) { query, all ->
         if (query.isBlank()) all else all.filter { it.text.contains(query, ignoreCase = true) }
-    }.asStateFlow()
+    }
 
-    val isRecording: StateFlow<Boolean> = settingsRepository.isRecording
+    val isRecording: Flow<Boolean> = settingsRepository.isRecording
 
     private var pollJob: Job? = null
 

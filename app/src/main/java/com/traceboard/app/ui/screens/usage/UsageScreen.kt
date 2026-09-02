@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Battery
+import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Storage
@@ -168,7 +168,7 @@ fun UsageScreen(viewModel: UsageViewModel) {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                                 Row(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Filled.Battery, contentDescription = null)
+                                    Icon(Icons.Filled.BatteryFull, contentDescription = null)
                                     Text(
                                         text = if (batteryLevel >= 0) "$batteryLevel%" else "Tidak tersedia",
                                         style = MaterialTheme.typography.titleMedium,
@@ -223,6 +223,7 @@ private fun formatBytes(bytes: Long): String {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppUsageRow(usage: AppUsage, onClick: () -> Unit) {
     Card(

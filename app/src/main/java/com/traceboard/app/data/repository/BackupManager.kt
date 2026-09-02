@@ -7,6 +7,7 @@ import com.traceboard.app.data.model.ClipboardItem
 import com.traceboard.app.data.model.TraceboardBackup
 import java.io.InputStream
 import java.io.OutputStream
+import kotlinx.coroutines.flow.first
 
 class BackupManager(private val context: Context) {
 
@@ -16,7 +17,7 @@ class BackupManager(private val context: Context) {
         val items = kotlin.runCatching {
             var result = emptyList<ClipboardItem>()
             kotlinx.coroutines.runBlocking {
-                kotlinx.coroutines.flow.first(clipboardRepository.getAll()).let { result = it }
+                clipboardRepository.getAll().first().let { result = it }
             }
             result
         }.getOrDefault(emptyList())
