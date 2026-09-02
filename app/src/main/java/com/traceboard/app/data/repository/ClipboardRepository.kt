@@ -2,6 +2,7 @@ package com.traceboard.app.data.repository
 
 import android.content.ClipboardManager
 import android.content.Context
+import com.traceboard.app.data.model.ClipboardFolder
 import com.traceboard.app.data.model.ClipboardItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.first
 class ClipboardRepository(private val context: Context) {
 
     private val dao = TraceboardDatabase.getInstance(context).clipboardDao()
+    private val folderDao = TraceboardDatabase.getInstance(context).folderDao()
 
     suspend fun addFromClipboard(clipboard: ClipboardManager?) {
         if (clipboard == null || !clipboard.hasPrimaryClip()) return
@@ -21,7 +23,19 @@ class ClipboardRepository(private val context: Context) {
             text = text,
             textLength = text.length,
             wordCount = text.split(Regex("\\s+")).filter { it.isNotBlank() }.size,
-            timestamp = System.currentTimeMillis()
+            timestamp = System.currentTimeMillis(),
+            folderId = null
+        ))
+    }
+
+    suspend fun addItemToFolder(text: String, folderId: Long) {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return
+        dao.insert(ClipboardItem(
+            text = trimmed,
+            textLength = trimmed.length,
+            wordCount = trimmed.split(Regex("\\s+")).filter { it.isNotBlank() }.size,
+            folderId = folderId
         ))
     }
 
@@ -41,12 +55,26 @@ class ClipboardRepository(private val context: Context) {
         dao.delete(item)
     }
 
-    suspend fun clear() {
-        dao.clear()
+    suspend fun clearAll() {
+        dao.clearAll()
+    }
+
+    fun getFolders(): Flow<List<ClipboardFolder>> = folderDao.getAll()
+
+    suspend fun createFolder(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        folderDao.insert(ClipboardFolder(name = trimmed))
+    }
+
+    suspend fun deleteFolder(folder: ClipboardFolder) {
+        dao.deleteByFolder(folder.id)
+        folderDao.delete(folder)
     }
 
     fun getAll(): Flow<List<ClipboardItem>> = dao.getAll()
 
-    fun search(query: String): Flow<List<ClipboardItem>> =
-        if (query.isBlank()) dao.getAll() else dao.search(query.trim())
+    fun getAllAll(): Flow<List<ClipboardItem>> = dao.getAllAll()
+
+    fun getForFolder(folderId: Long): Flow<List<ClipboardItem>> = dao.getForFolder(folderId)
 }

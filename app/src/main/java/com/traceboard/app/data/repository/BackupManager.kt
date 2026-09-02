@@ -17,7 +17,7 @@ class BackupManager(private val context: Context) {
         val items = kotlin.runCatching {
             var result = emptyList<ClipboardItem>()
             kotlinx.coroutines.runBlocking {
-                clipboardRepository.getAll().first().let { result = it }
+                clipboardRepository.getAllAll().first().let { result = it }
             }
             result
         }.getOrDefault(emptyList())
@@ -36,6 +36,7 @@ class BackupManager(private val context: Context) {
             val backup = gson.fromJson(json, TraceboardBackup::class.java)
             (backup.clipboardEntries ?: return@runCatching null)
                 .filter { it.text.isNotBlank() }
+                .map { it.copy(folderId = null) }
         }.getOrNull()
     }
 }

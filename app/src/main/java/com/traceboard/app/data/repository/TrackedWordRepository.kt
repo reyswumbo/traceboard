@@ -10,6 +10,12 @@ class TrackedWordRepository(private val context: Context) {
 
     fun getAll(): Flow<List<TrackedWord>> = dao.getAll()
 
+    suspend fun getWords(): List<TrackedWord> = dao.getWords()
+
+    suspend fun incrementCount(word: String, amount: Int) {
+        dao.incrementCount(word, amount)
+    }
+
     suspend fun add(word: String) {
         val trimmed = word.trim()
         if (trimmed.isEmpty()) return

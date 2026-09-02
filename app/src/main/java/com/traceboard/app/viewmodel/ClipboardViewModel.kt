@@ -4,16 +4,19 @@ import android.app.Application
 import android.content.ClipboardManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.traceboard.app.data.model.ClipboardFolder
 import com.traceboard.app.data.model.ClipboardItem
 import com.traceboard.app.data.repository.BackupManager
 import com.traceboard.app.data.repository.ClipboardRepository
 import com.traceboard.app.data.repository.SettingsRepository
+import com.traceboard.app.service.ClipboardRecordingService
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,25 +30,38 @@ class ClipboardViewModel(
     private val backupManager = BackupManager(app)
 
     private val _searchQuery = MutableStateFlow("")
-    private val _items = MutableStateFlow<List<ClipboardItem>>(emptyList())
+    private val _selectedFolder = MutableStateFlow<Long?>(null)
 
-    val items: Flow<List<ClipboardItem>> = combine(_searchQuery, _items) { query, all ->
+    val selectedFolder: StateFlow<Long?> = _selectedFolder.asStateFlow()
+    val folders: Flow<List<ClipboardFolder>> = clipboardRepository.getFolders()
+
+    private val scopeItems: Flow<List<ClipboardItem>> = _selectedFolder
+        .flatMapLatest { folderId ->
+            if (folderId == null) clipboardRepository.getAll()
+            else clipboardRepository.getForFolder(folderId)
+        }
+
+    val items: Flow<List<ClipboardItem>> = combine(_searchQuery, scopeItems) { query, all ->
         if (query.isBlank()) all else all.filter { it.text.contains(query, ignoreCase = true) }
     }
 
     val isRecording: Flow<Boolean> = settingsRepository.isRecording
 
-    private var pollJob: Job? = null
-
     init {
         viewModelScope.launch {
-            clipboardRepository.getAll().collect { _items.value = it }
-        }
-        viewModelScope.launch {
             settingsRepository.isRecording.collect { recording ->
-                if (recording) startPollingInternal() else pollJob?.cancel()
+                if (recording) runCatching { ClipboardRecordingService.start(app) }
+                else ClipboardRecordingService.stop(app)
             }
         }
+    }
+
+    fun selectFolder(folderId: Long?) {
+        _selectedFolder.value = folderId
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     fun startRecording() {
@@ -60,30 +76,47 @@ class ClipboardViewModel(
         }
     }
 
-    private fun startPollingInternal() {
-        pollJob?.cancel()
-        pollJob = viewModelScope.launch(Dispatchers.IO) {
-            while (true) {
-                val cm = app.getSystemService(ClipboardManager::class.java)
-                clipboardRepository.addFromClipboard(cm)
-                delay(1500)
+    fun createFolder(name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            clipboardRepository.createFolder(name)
+        }
+    }
+
+    fun deleteFolder(folder: ClipboardFolder) {
+        viewModelScope.launch(Dispatchers.IO) {
+            clipboardRepository.deleteFolder(folder)
+            if (_selectedFolder.value == folder.id) _selectedFolder.value = null
+        }
+    }
+
+    fun saveItem(text: String) {
+        val folderId = _selectedFolder.value
+        viewModelScope.launch(Dispatchers.IO) {
+            val trimmed = text.trim()
+            if (trimmed.isEmpty()) return@launch
+            if (folderId == null) {
+                clipboardRepository.insert(ClipboardItem(
+                    text = trimmed,
+                    textLength = trimmed.length,
+                    wordCount = trimmed.split(Regex("\\s+")).filter { it.isNotBlank() }.size
+                ))
+            } else {
+                clipboardRepository.addItemToFolder(trimmed, folderId)
             }
         }
     }
 
-    fun setSearchQuery(query: String) {
-        _searchQuery.value = query
-    }
-
-    fun saveItem(text: String) {
+    fun addCurrentClipboardToFolder(folderId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            val trimmed = text.trim()
-            if (trimmed.isEmpty()) return@launch
-            clipboardRepository.insert(ClipboardItem(
-                text = trimmed,
-                textLength = trimmed.length,
-                wordCount = trimmed.split(Regex("\\s+")).filter { it.isNotBlank() }.size
-            ))
+            val cm = app.getSystemService(ClipboardManager::class.java)
+            val clip = cm?.primaryClip
+            val text = if (clip != null && clip.itemCount > 0) {
+                clip.getItemAt(0).coerceToText(app)?.toString()?.trim().orEmpty()
+            } else {
+                ""
+            }
+            if (text.isEmpty()) return@launch
+            clipboardRepository.addItemToFolder(text, folderId)
         }
     }
 
@@ -103,7 +136,7 @@ class ClipboardViewModel(
 
     fun clearAll() {
         viewModelScope.launch(Dispatchers.IO) {
-            clipboardRepository.clear()
+            clipboardRepository.clearAll()
         }
     }
 

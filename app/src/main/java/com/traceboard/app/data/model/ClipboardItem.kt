@@ -10,5 +10,6 @@ data class ClipboardItem(
     val text: String,
     val textLength: Int,
     val wordCount: Int,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val folderId: Long? = null
 )

@@ -1,8 +1,10 @@
 # Traceboard
 
-**Traceboard — Clipboard, Writing & Usage Analytics** adalah aplikasi Android native yang menggabungkan pengelolaan *clipboard*, statistik menulis, pelacakan kata kunci, dan analitik penggunaan aplikasi dalam satu pengalaman yang bersih dan modern.
+<p align="center">
+  <img src="docs/mascot.png" alt="Traceboard" width="160" />
+</p>
 
-Aplikasi ini dibuat sebagai jawaban dari **Traceboard Android App Challenge** menggunakan **Kotlin**, **Jetpack Compose**, dan **Material 3**.
+**Traceboard — Clipboard, Writing & Usage Analytics** adalah aplikasi Android native yang menggabungkan pengelolaan *clipboard*, statistik menulis, pelacakan kata kunci, dan analitik penggunaan aplikasi dalam satu pengalaman yang bersih dan modern. Dibangun menggunakan **Kotlin**, **Jetpack Compose**, dan **Material 3**.
 
 ---
 
@@ -10,8 +12,8 @@ Aplikasi ini dibuat sebagai jawaban dari **Traceboard Android App Challenge** me
 
 Traceboard adalah aplikasi utilitas produktivitas pribadi yang berfokus pada tiga area utama:
 
-1. **Clipboard** — Menyimpan teks yang disalin secara otomatis.
-2. **Menulis** — Melacak jumlah kata, karakter, dan kata kunci yang dipilih.
+1. **Clipboard** — Menyimpan teks yang disalin secara otomatis, mendukung **folder** untuk mengelompokkan hasil salinan.
+2. **Menulis** — Melacak kata kunci yang dipilih secara otomatis setiap kali kamu mengetik di aplikasi mana pun.
 3. **Penggunaan** — Menganalisis waktu penggunaan aplikasi dan menampilkan statistiknya.
 
 Ketiga fitur tersebut dirancang agar terasa seperti satu produk yang utuh dan *polished*.
@@ -21,19 +23,23 @@ Ketiga fitur tersebut dirancang agar terasa seperti satu produk yang utuh dan *p
 ## Fitur Aplikasi
 
 - Garansi kecil: **APK ringan** (`minifyEnabled` + `shrinkResources` aktif pada build rilis).
-- **Dasbor**: Ringkasan aktivitas hari ini (waktu layar, kata ditulis, item clipboard, kata terlacak).
+- **Dasbor**: Ringkasan aktivitas hari ini (waktu layar, kata ditulis, item clipboard, kata terlacak). Item yang dihitung hanya dari folder **Semua**.
 - **Clipboard Manager**:
   - Tombol **Mulai/Berhenti** untuk merekam teks yang disalin.
+  - **Foreground service** sehingga perekaman tetap berjalan saat aplikasi di *background*.
   - Indikator status perekaman.
   - Simpan otomatis, lihat, edit, hapus, salin ulang.
   - Pencarian dan pengurutan (terbaru di atas).
+  - **Folder clipboard**: folder "Semua" secara otomatis tersedia; buat folder baru (mis. `facebook`), lalu tambahkan item dari clipboard ke folder tersebut.
+  - Menambahkan item ke folder **tidak menghapus** item di "Semua". Menghapus item di "Semua" **tidak** menghapus salinannya di folder lain.
   - **Impor & Ekspor** dalam format JSON (melalui *system file picker*).
-- **Menulis & Analitik Kata**:
-  - Penghitungan *real-time*: kata, karakter, dan huruf (spasi tidak dihitung sebagai kata).
+- **Menulis & Pelacakan Kata**:
+  - Kata yang kamu ketik di aplikasi mana pun dihitung **otomatis** lewat layanan aksesibilitas (tanpa tombol Mulai).
   - Pelacakan kata kunci (**tidak membedakan huruf besar/kecil**).
   - Tambah, hapus, dan reset hitungan kata terlacak.
 - **Penggunaan Aplikasi**:
-  - Periode waktu: Hari Ini, 7 Hari, 1 Bulan, Semua.
+  - Periode cepat: Hari Ini, 7 Hari, Semua.
+  - Dropdown **1–12 bulan** atau **1 tahun** sebagai periode kustom.
   - Total waktu penggunaan + statistik per aplikasi (jam, menit, detik tiap aplikasi).
   - Detail per aplikasi melalui *bottom sheet*.
   - Informasi **Battery** (level perangkat) dan **Penyimpanan**.
@@ -44,16 +50,15 @@ Ketiga fitur tersebut dirancang agar terasa seperti satu produk yang utuh dan *p
 
 ---
 
-## Aturan Penghitungan Menulis
+## Cara Penghitungan Menulis
 
-Aturan yang digunakan untuk statistik menulis didokumentasikan secara eksplisit agar konsisten dengan contoh pada *brief*:
+Kata terlacak dihitung **otomatis** setiap kali kamu mengetik:
 
-- **Total kata**: dihitung dengan memecah teks berdasarkan spasi/whitespace dan menghitung token yang **tidak kosong**. Spasi **tidak** ikut dihitung sebagai kata; spasi berlebih juga tidak menambah jumlah kata.
-- **Total karakter**: seluruh jumlah karakter pada teks, **termasuk spasi**.
-- **Total huruf**: jumlah karakter yang merupakan huruf (`isLetter()`).
-- **Pelacakan kata kunci**: pencocokan **tidak peka huruf besar/kecil** menggunakan ekspresi reguler dengan `(?i)` dan `Regex.escape` pada kata kunci.
-
-Contoh: teks `maaf maaf` menghasilkan **2 kata**, **8 huruf**, **9 karakter** (termasuk spasi; spasi tidak dihitung sebagai kata), dan kata terlacak `maaf` bernilai **2×**. Teks `Maaf MAAF maAf` juga tetap dihitung sebagai kata `maaf` sebanyak **3×**.
+- Setelah layanan aksesibilitas aktif (dari Pengaturan > Aksesibilitas), teks yang sedang kamu ketik di **aplikasi mana pun** dibaca.
+- Setiap kata yang kamu lacak dan muncul di teks ketikan akan **menambah hitungan** (`count`) di database — **tanpa** perlu menekan tombol Mulai.
+- Pencocokan **tidak peka huruf besar/kecil** menggunakan ekspresi reguler dengan `(?i)` dan `Regex.escape` pada kata kunci.
+- Kata yang sama dihitung berulang sesuai kemunculannya (`maaf maaf` → `maaf` bernilai **2×**; `Maaf MAAF maAf` → tetap **3×**).
+- `CLEAR` penghitungan dilakukan lewat tombol **Reset hitungan** di pojok atas halaman Menulis.
 
 ---
 
@@ -72,9 +77,10 @@ app/src/main/java/com/traceboard/app/
 ├── MainActivity.kt              # Entry point + navigation
 ├── TraceboardApplication.kt     # Application + Database singleton
 ├── data/
-│   ├── model/                   # Entity & data class (ClipboardItem, TrackedWord, dll.)
+│   ├── model/                   # Entity & data class (ClipboardItem, TrackedWord, ClipboardFolder, dll.)
 │   ├── repository/              # DAO, Database, Repository, BackupManager
-│   └── util/                    # WritingAnalyzer, TimeFormatter
+│   └── util/                    # WritingAnalyzer, TimeFormatter, AccessibilityUtils
+├── service/                     # ClipboardRecordingService, WritingAccessibilityService
 ├── ui/
 │   ├── components/              # Komponen UI bersama (StatCard, EmptyState)
 │   ├── navigation/              # Definisi screen
@@ -134,10 +140,11 @@ Android Studio: *Open project → Traceboard* lalu jalankan dengan tombol ▶ pa
 
 ## Clipboard Implementation
 
-- Teks dipantau dengan polling `ClipboardManager` (tanpa izin khusus; hanya saat **Mulai** ditekan).
-- Data disimpan di tabel **Room** `clipboard_items` (teks, panjang, jumlah kata, cap waktu).
-- Item dapat: disalin ulang, diedit, dihapus, dihapus semua, dicari, ditambah manual.
-- **Impor/Ekspor**: format **JSON**. `Traceboard` -> Ekspor menghasilkan file `traceboard-backup.json` berisi seluruh entri clipboard + cap waktu. Impor memvalidasi struktur data; tautan yang sama tidak diimpor dua kali; file rusak ditangani dengan aman (menampilkan pesan gagal, tanpa crash).
+- Teks dipantau dengan polling `ClipboardManager` yang berjalan di **foreground service** (tanpa izin khusus; hanya berjalan saat **Mulai** ditekan). Service berjalan di *foreground* sehingga tetap merekam saat aplikasi berada di *background*.
+- Data disimpan di tabel **Room** `clipboard_items` (teks, panjang, jumlah kata, cap waktu, folder).
+- **Folder**: tabel `clipboard_folders`. Folder **Semua** disediakan otomatis (item `folderId = NULL`). Menambahkan item ke folder lain membuat **salinan**; item di "Semua" tetap ada. Menghapus item di "Semua" tidak menyinggung salinan di folder lain, begitu pula sebaliknya.
+- Item dapat: disalin ulang, diedit, dihapus, dihapus semua (hanya scope "Semua"), dicari, ditambah manual.
+- **Impor/Ekspor**: format **JSON**. `Traceboard` -> Ekspor menghasilkan file `traceboard-backup.json` berisi seluruh entri clipboard + cap waktu. Impor memvalidasi struktur data; teks yang sama tidak diimpor dua kali; file rusak ditangani dengan aman (menampilkan pesan gagal, tanpa crash). Item hasil impor masuk ke folder **Semua**.
 
 ---
 
@@ -149,7 +156,7 @@ Statistik penggunaan aplikasi membutuhkan akses khusus Android:
 2. Pilih aplikasi **Traceboard** dan aktifkan **Akses Penggunaan Aplikasi** (*Usage Access*).
 3. Kembali ke aplikasi, lalu tarik data (tombol refresh).
 
-- **Periode**: Hari Ini / 7 Hari / 1 Bulan / Semua.
+- **Periode**: chip cepat Hari Ini / 7 Hari / Semua, plus dropdown **1–12 bulan** atau **1 tahun**.
 - Waktu ditampilkan presisi: contoh `1 jam 24 menit 17 detik` atau `45 detik`.
 - Buka *bottom sheet* pada sebuah aplikasi untuk detailnya.
 
@@ -157,16 +164,18 @@ Statistik penggunaan aplikasi membutuhkan akses khusus Android:
 
 - **Battery**: menampilkan level baterai perangkat saat ini (`BatteryManager`).
 - **Penyimpanan**: total, sisa, dan terpakai dari penyimpanan internal (`StatFs`).
-- Statistik **baterai per aplikasi** dan **penyimpanan per aplikasi** **tidak** tersedia melalui API Android standar yang bisa diandalkan — sesuai prinsip di *brief*, aplikasi **tidak membuat data palsu**; informasi tersebut ditampilkan sebagai "tidak tersedia".
+- Statistik **baterai per aplikasi** dan **penyimpanan per aplikasi** **tidak** tersedia melalui API Android standar yang bisa diandalkan — aplikasi **tidak membuat data palsu**; informasi tersebut ditampilkan sebagai "tidak tersedia".
 
 ---
 
 ## Permission & Privasi
 
-`android:required="false"` digunakan untuk izin *usage access* agar aplikasi tetap bisa dipasang tanpa izin tersebut.
+`android:required="false"` tidak digunakan lagi karena manifest di atas API 31 menolaknya; aplikasi tetap bisa dipasang tanpa izin khusus.
 
 - `PACKAGE_USAGE_STATS` — untuk statistik penggunaan aplikasi (wajib diaktifkan manual oleh pengguna).
 - `QUERY_ALL_PACKAGES` — untuk membaca nama/ikon aplikasi pada daftar penggunaan.
+- `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_DATA_SYNC` — untuk perekaman clipboard saat aplikasi di *background*.
+- `POST_NOTIFICATIONS` — untuk menampilkan notifikasi status perekaman (Android 13+; diminta saat pertama kali membuka aplikasi).
 - Izin penyimpanan lama dibatasi ke API lama; **Impor/Ekspor** menggunakan Storage Access Framework (tidak butuh izin penyimpanan).
 - Tidak ada izin yang diminta tanpa keperluan nyata.
 
@@ -213,7 +222,8 @@ Hasil build:
 ## Troubleshooting
 
 - **Statistik penggunaan kosong** → pastikan izin "Akses Penggunaan Aplikasi" sudah diaktifkan untuk Traceboard, lalu *refresh*. Pada perangkat baru, data perlu terkumpul seiring pemakaian.
-- **Clipboard tidak tersimpan** → pastikan tombol **Mulai** aktif (tampil "Merekam").
+- **Clipboard tidak tersimpan** → pastikan tombol **Mulai** aktif (tampil "Merekam"); jika aplikasi ditutup total, perekaman ikut berhenti dan akan lanjut saat aplikasi dibuka kembali.
+- **Kata yang diketik tidak dihitung** → pastikan layanan aksesibilitas **Traceboard** sudah aktif di *Pengaturan > Aksesibilitas* (tampilkan banner di halaman Menulis).
 - **Impor gagal** → pastikan file adalah hasil ekspor Traceboard (`traceboard-backup.json`) dan tidak rusak.
 - **Build gagal di GitHub Actions** → cek log di tab *Actions*; masalah umum: versi JDK dan izin *executable* `gradlew` (sudah diatur `chmod +x` pada workflow).
 - **APK besar** → gunakan build **Release** yang telah diaktifkan R8 + *resource shrinking*.
@@ -225,4 +235,5 @@ Hasil build:
 - Statistik penggunaan aplikasi bergantung pada **Akses Penggunaan Aplikasi** yang harus diaktifkan manual oleh pengguna.
 - Periode "Semua" dibatasi oleh data historis yang disimpan sistem Android.
 - Statistik battery/storage **per aplikasi** tidak tersedia lewat API publik yang stabil.
-- Pembacaan clipboard di latar belakang penuh dibatasi sistem sejak Android 10; aplikasi merekam clipboard saat aplikasi aktif dan perekaman **Mulai** dinyalakan.
+- Membaca clipboard di latar belakang penuh dibatasi sistem sejak Android 10; aplikasi merekam clipboard lewat **foreground service** saat perekaman **Mulai** menyala, dan berhenti bila aplikasi dimatikan total atau tombol Berhenti ditekan.
+- Penghitungan kata menulis membutuhkan **layanan aksesibilitas** yang diaktifkan manual oleh pengguna.

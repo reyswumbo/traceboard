@@ -2,8 +2,10 @@ package com.traceboard.app.ui.screens.clipboard
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentPaste
@@ -19,12 +22,14 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.FiberManualRecord
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.traceboard.app.data.model.ClipboardFolder
 import com.traceboard.app.data.model.ClipboardItem
 import com.traceboard.app.ui.components.EmptyState
 import com.traceboard.app.viewmodel.ClipboardViewModel
@@ -58,12 +64,17 @@ import kotlinx.coroutines.launch
 @Composable
 fun ClipboardScreen(viewModel: ClipboardViewModel) {
     val items by viewModel.items.collectAsStateWithLifecycle(initialValue = emptyList<ClipboardItem>())
+    val folders by viewModel.folders.collectAsStateWithLifecycle(initialValue = emptyList<ClipboardFolder>())
+    val selectedFolder by viewModel.selectedFolder.collectAsStateWithLifecycle(initialValue = null)
     val isRecording by viewModel.isRecording.collectAsStateWithLifecycle(initialValue = false)
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var editingItem by remember { mutableStateOf<ClipboardItem?>(null) }
     var editText by remember { mutableStateOf("") }
     var showAddDialog by remember { mutableStateOf(false) }
+    var showFolderDialog by remember { mutableStateOf(false) }
+    var newFolderName by remember { mutableStateOf("") }
+    var folderToDelete by remember { mutableStateOf<ClipboardFolder?>(null) }
     var searchQuery by remember { mutableStateOf("") }
 
     val exportLauncher = rememberLauncherForActivityResult(
@@ -143,35 +154,71 @@ fun ClipboardScreen(viewModel: ClipboardViewModel) {
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            TextButton(
-                onClick = {
-                    viewModel.clearAll()
-                    scope.launch { snackbarHostState.showSnackbar("Semua item dihapus") }
-                },
-                enabled = items.isNotEmpty(),
-                modifier = Modifier.padding(horizontal = 8.dp)
-            ) {
-                Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
-                Text("Hapus semua", modifier = Modifier.padding(start = 8.dp))
+            FolderBar(
+                folders = folders,
+                selectedFolder = selectedFolder,
+                onSelect = { viewModel.selectFolder(it) },
+                onAddFolder = {
+                    newFolderName = ""
+                    showFolderDialog = true
+                }
+            )
+
+            if (selectedFolder == null) {
+                TextButton(
+                    onClick = {
+                        viewModel.clearAll()
+                        scope.launch { snackbarHostState.showSnackbar("Semua item dihapus") }
+                    },
+                    enabled = items.isNotEmpty(),
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+                    Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Text("Hapus semua", modifier = Modifier.padding(start = 8.dp))
+                }
+            } else {
+                val folder = folders.firstOrNull { it.id == selectedFolder }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { viewModel.addCurrentClipboardToFolder(selectedFolder) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Filled.ContentPaste, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Text("Tambah item dari clipboard", modifier = Modifier.padding(start = 6.dp))
+                    }
+                    TextButton(onClick = { folderToDelete = folder }) {
+                        Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Text("Hapus folder")
+                    }
+                }
             }
 
             if (items.isEmpty()) {
                 EmptyState(
                     icon = Icons.Filled.ContentPaste,
-                    title = "Belum ada item clipboard",
-                    description = "Tekan Mulai untuk merekam teks yang disalin, atau tambahkan secara manual."
+                    title = if (selectedFolder == null) "Belum ada item clipboard"
+                    else "Folder kosong",
+                    description = if (selectedFolder == null)
+                        "Tekan Mulai untuk merekam teks yang disalin, atau tambahkan secara manual."
+                    else "Tekan «Tambah item dari clipboard» untuk menyimpan teks yang sedang disalin ke folder ini."
                 )
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                    contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(items, key = { it.id }) { item ->
                         ClipboardItemCard(
                             item = item,
-                            onCopy = { viewModel.copyToClipboard(item)
-                                scope.launch { snackbarHostState.showSnackbar("Disalin ke clipboard") } },
+                            onCopy = {
+                                viewModel.copyToClipboard(item)
+                                scope.launch { snackbarHostState.showSnackbar("Disalin ke clipboard") }
+                            },
                             onEdit = {
                                 editingItem = item
                                 editText = item.text
@@ -213,7 +260,7 @@ fun ClipboardScreen(viewModel: ClipboardViewModel) {
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Tambah Teks") },
+            title = { Text(if (selectedFolder == null) "Tambah Teks" else "Tambah Teks ke Folder") },
             text = {
                 OutlinedTextField(
                     value = editText,
@@ -232,6 +279,87 @@ fun ClipboardScreen(viewModel: ClipboardViewModel) {
                 TextButton(onClick = { showAddDialog = false }) { Text("Batal") }
             }
         )
+    }
+
+    if (showFolderDialog) {
+        AlertDialog(
+            onDismissRequest = { showFolderDialog = false },
+            title = { Text("Buat Folder Baru") },
+            text = {
+                OutlinedTextField(
+                    value = newFolderName,
+                    onValueChange = { newFolderName = it },
+                    label = { Text("Contoh: facebook") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.createFolder(newFolderName)
+                    newFolderName = ""
+                    showFolderDialog = false
+                }) { Text("Buat") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showFolderDialog = false }) { Text("Batal") }
+            }
+        )
+    }
+
+    folderToDelete?.let { folder ->
+        AlertDialog(
+            onDismissRequest = { folderToDelete = null },
+            title = { Text("Hapus Folder") },
+            text = { Text("Folder \"${folder.name}\" beserta semua item di dalamnya akan dihapus. Item di folder Semua tidak terpengaruh.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteFolder(folder)
+                    folderToDelete = null
+                    scope.launch { snackbarHostState.showSnackbar("Folder dihapus") }
+                }) { Text("Hapus") }
+            },
+            dismissButton = {
+                TextButton(onClick = { folderToDelete = null }) { Text("Batal") }
+            }
+        )
+    }
+}
+
+@Composable
+private fun FolderBar(
+    folders: List<ClipboardFolder>,
+    selectedFolder: Long?,
+    onSelect: (Long?) -> Unit,
+    onAddFolder: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        FilterChip(
+            selected = selectedFolder == null,
+            onClick = { onSelect(null) },
+            label = { Text("Semua") }
+        )
+        folders.forEach { folder ->
+            FilterChip(
+                selected = selectedFolder == folder.id,
+                onClick = { onSelect(folder.id) },
+                label = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.Folder, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Text(folder.name, modifier = Modifier.padding(start = 4.dp))
+                    }
+                }
+            )
+        }
+        FilledTonalIconButton(onClick = onAddFolder) {
+            Icon(Icons.Filled.Add, contentDescription = "Buat folder")
+        }
     }
 }
 

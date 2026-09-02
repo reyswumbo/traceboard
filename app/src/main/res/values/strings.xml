@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Traceboard</string>
+    <string name="accessibility_service_description">Traceboard menggunakan layanan ini untuk menghitung kemunculan kata yang kamu lacak setiap kali kamu mengetik di aplikasi mana pun. Layanan hanya membaca teks yang sedang diketik dan tidak mengirimkan data apa pun ke mana pun.</string>
 </resources>

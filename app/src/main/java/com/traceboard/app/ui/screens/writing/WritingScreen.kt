@@ -2,7 +2,6 @@ package com.traceboard.app.ui.screens.writing
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,8 +14,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,25 +29,43 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.traceboard.app.data.model.TrackedWord
-import com.traceboard.app.ui.components.StatCard
+import com.traceboard.app.data.util.AccessibilityUtils
+import com.traceboard.app.ui.components.EmptyState
 import com.traceboard.app.viewmodel.WritingViewModel
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WritingScreen(viewModel: WritingViewModel) {
-    val textChanged by viewModel.text.collectAsStateWithLifecycle()
-    val stats by viewModel.stats.collectAsStateWithLifecycle()
-    val trackedWords by viewModel.trackedWords.collectAsStateWithLifecycle()
-    val trackedCounts by viewModel.trackedCounts.collectAsStateWithLifecycle()
+    val trackedWords by viewModel.trackedWords.collectAsStateWithLifecycle(initialValue = emptyList<TrackedWord>())
+    val context = LocalContext.current
+    var accessibilityEnabled by remember {
+        mutableStateOf(AccessibilityUtils.isWritingServiceEnabled(context))
+    }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                accessibilityEnabled = AccessibilityUtils.isWritingServiceEnabled(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     var showAddWordDialog by remember { mutableStateOf(false) }
     var newWord by remember { mutableStateOf("") }
@@ -70,30 +88,33 @@ fun WritingScreen(viewModel: WritingViewModel) {
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-            OutlinedTextField(
-                value = textChanged,
-                onValueChange = { viewModel.onTextChange(it) },
-                label = { Text("Tulis teksmu di sini…") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 8.dp),
-                minLines = 5
-            )
-
-            Text(
-                text = "Statistik Menulis",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatCard(label = "Kata", value = stats.wordCount.toString(), modifier = Modifier.weight(1f))
-                StatCard(label = "Karakter", value = stats.charCount.toString(), modifier = Modifier.weight(1f))
-                StatCard(label = "Huruf", value = stats.letterCount.toString(), modifier = Modifier.weight(1f))
+            if (!accessibilityEnabled) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.TouchApp, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
+                            Text(
+                                text = "Aktifkan layanan aksesibilitas",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                        Text(
+                            text = "Kata-kata yang kamu ketik di aplikasi mana pun akan otomatis dihitung (tanpa tombol Mulai).",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            modifier = Modifier.padding(top = 6.dp)
+                        )
+                        Button(
+                            onClick = { AccessibilityUtils.openAccessibilitySettings(context) },
+                            modifier = Modifier.padding(top = 10.dp)
+                        ) { Text("Buka Pengaturan Aksesibilitas") }
+                    }
+                }
             }
 
             Row(
@@ -111,30 +132,35 @@ fun WritingScreen(viewModel: WritingViewModel) {
             }
 
             if (trackedWords.isEmpty()) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-                ) {
-                    Text(
-                        text = "Belum ada kata terlacak. Tambahkan kata yang ingin dipantau kemunculannya (huruf besar/kecil tidak memengaruhi).",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+                EmptyState(
+                    icon = Icons.Filled.Tag,
+                    title = "Belum ada kata terlacak",
+                    description = "Tambahkan kata yang ingin dipantau. Saat kamu mengetik kata itu di aplikasi mana pun, hitungannya bertambah otomatis."
+                )
             } else {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     trackedWords.forEach { word ->
-                        TrackedWordRow(word = word, count = trackedCounts[word.word] ?: 0, onRemove = {
+                        TrackedWordRow(word = word, onRemove = {
                             viewModel.removeTrackedWord(word)
                         })
                     }
                 }
             }
 
-            androidx.compose.foundation.layout.Spacer(Modifier.size(16.dp))
+            Text(
+                text = if (accessibilityEnabled) {
+                    "Mengetik di aplikasi mana pun akan menambah hitungan kata yang kamu lacak. Huruf besar/kecil tidak memengaruhi."
+                } else {
+                    "Setelah layanan aksesibilitas aktif, setiap kata yang kamu ketik akan dihitung otomatis — tanpa perlu menekan tombol Mulai."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
+            )
         }
     }
 
@@ -167,7 +193,6 @@ fun WritingScreen(viewModel: WritingViewModel) {
 @Composable
 private fun TrackedWordRow(
     word: TrackedWord,
-    count: Int,
     onRemove: () -> Unit
 ) {
     Card(
@@ -185,7 +210,7 @@ private fun TrackedWordRow(
                 modifier = Modifier.weight(1f).padding(start = 12.dp)
             )
             Text(
-                text = "${count}x",
+                text = "${word.count}x",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )

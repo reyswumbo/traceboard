@@ -19,12 +19,16 @@ import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -42,6 +46,7 @@ import com.traceboard.app.data.model.AppUsage
 import com.traceboard.app.data.repository.StorageInfo
 import com.traceboard.app.data.util.TimeFormatter
 import com.traceboard.app.ui.components.EmptyState
+import com.traceboard.app.viewmodel.CustomPeriod
 import com.traceboard.app.viewmodel.UsagePeriod
 import com.traceboard.app.viewmodel.UsageViewModel
 
@@ -49,12 +54,15 @@ import com.traceboard.app.viewmodel.UsageViewModel
 @Composable
 fun UsageScreen(viewModel: UsageViewModel) {
     val period by viewModel.period.collectAsStateWithLifecycle()
+    val custom by viewModel.custom.collectAsStateWithLifecycle(initialValue = null)
+    val activeLabel by viewModel.activeLabel.collectAsStateWithLifecycle()
     val appUsage by viewModel.appUsage.collectAsStateWithLifecycle()
     val hasPermission by viewModel.hasPermission.collectAsStateWithLifecycle()
     val lastUpdated by viewModel.lastUpdated.collectAsStateWithLifecycle()
     val batteryLevel by viewModel.batteryLevel.collectAsStateWithLifecycle()
     val storage by viewModel.storage.collectAsStateWithLifecycle()
     var selectedApp by remember { mutableStateOf<AppUsage?>(null) }
+    var dropdownExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.refresh() }
 
@@ -77,8 +85,8 @@ fun UsageScreen(viewModel: UsageViewModel) {
             ) {
                 UsagePeriod.entries.forEach { p ->
                     FilterChip(
-                        selected = period == p,
-                        onClick = { if (period != p) viewModel.selectPeriod(p) },
+                        selected = period == p && custom == null,
+                        onClick = { viewModel.selectQuickPeriod(p) },
                         label = {
                             Text(
                                 p.label,
@@ -86,6 +94,39 @@ fun UsageScreen(viewModel: UsageViewModel) {
                             )
                         }
                     )
+                }
+            }
+
+            ExposedDropdownMenuBox(
+                expanded = dropdownExpanded,
+                onExpandedChange = { dropdownExpanded = !dropdownExpanded }
+            ) {
+                OutlinedTextField(
+                    value = activeLabel,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Periode bulanan / tahunan") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = dropdownExpanded,
+                    onDismissRequest = { dropdownExpanded = false }
+                ) {
+                    CustomPeriod.options.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option.label) },
+                            onClick = {
+                                dropdownExpanded = false
+                                viewModel.selectCustomPeriod(option)
+                            }
+                        )
+                    }
                 }
             }
 

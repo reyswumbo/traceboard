@@ -11,7 +11,6 @@ import com.traceboard.app.data.util.TimeFormatter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class DashboardState(
@@ -34,8 +33,8 @@ class DashboardViewModel(
     private val _state = MutableStateFlow(DashboardState())
     val state: StateFlow<DashboardState> = _state.asStateFlow()
 
-    private val _trackedCountsToday = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val trackedCountsToday: StateFlow<Map<String, Int>> = _trackedCountsToday.asStateFlow()
+    private val _trackedCounts = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val trackedCountsToday: StateFlow<Map<String, Int>> = _trackedCounts.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -53,6 +52,11 @@ class DashboardViewModel(
                 refreshGreeting()
             }
         }
+        viewModelScope.launch {
+            trackedWordRepository.getAll().collect { words ->
+                _trackedCounts.value = words.associate { it.word to it.count }
+            }
+        }
         refreshDashboard()
     }
 
@@ -64,18 +68,6 @@ class DashboardViewModel(
                 screenTimeToday = TimeFormatter.formatCompact(screenTime),
                 hasUsagePermission = hasPerm
             )
-            val totals = mutableMapOf<String, Int>()
-            val words = trackedWordRepository.getAll().first()
-            val allItems = clipboardRepository.getAll().first()
-            for (word in words) {
-                var count = 0
-                for (item in allItems) {
-                    count += com.traceboard.app.data.util.WritingAnalyzer
-                        .countOccurrences(item.text, word.word)
-                }
-                totals[word.word] = count
-            }
-            _trackedCountsToday.value = totals
         }
     }
 

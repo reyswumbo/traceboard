@@ -8,15 +8,25 @@ import com.traceboard.app.data.repository.StorageInfo
 import com.traceboard.app.data.repository.UsageRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 enum class UsagePeriod(val label: String, val millis: Long) {
     TODAY("Hari Ini", 24L * 3600 * 1000),
     SEVEN_DAYS("7 Hari", 7L * 24 * 3600 * 1000),
-    MONTH("1 Bulan", 30L * 24 * 3600 * 1000),
     ALL_TIME("Semua", Long.MAX_VALUE)
+}
+
+data class CustomPeriod(val label: String, val millis: Long) {
+    companion object {
+        val options: List<CustomPeriod> =
+            (1..12).map { n -> CustomPeriod("$n Bulan", n * 30L * 24 * 3600 * 1000) } +
+                CustomPeriod("1 Tahun", 365L * 24 * 3600 * 1000)
+    }
 }
 
 class UsageViewModel(
@@ -27,11 +37,15 @@ class UsageViewModel(
     private val _period = MutableStateFlow(UsagePeriod.TODAY)
     val period: StateFlow<UsagePeriod> = _period.asStateFlow()
 
+    private val _custom = MutableStateFlow<CustomPeriod?>(null)
+    val custom: StateFlow<CustomPeriod?> = _custom.asStateFlow()
+
+    val activeLabel: StateFlow<String> =
+        combine(_period, _custom) { p, c -> c?.label ?: p.label }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UsagePeriod.TODAY.label)
+
     private val _appUsage = MutableStateFlow<List<AppUsage>>(emptyList())
     val appUsage: StateFlow<List<AppUsage>> = _appUsage.asStateFlow()
-
-    private val _selectedApp = MutableStateFlow<AppUsage?>(null)
-    val selectedApp: StateFlow<AppUsage?> = _selectedApp.asStateFlow()
 
     private val _hasPermission = MutableStateFlow(false)
     val hasPermission: StateFlow<Boolean> = _hasPermission.asStateFlow()
@@ -49,13 +63,15 @@ class UsageViewModel(
         refresh()
     }
 
-    fun selectPeriod(newPeriod: UsagePeriod) {
+    fun selectQuickPeriod(newPeriod: UsagePeriod) {
         _period.value = newPeriod
+        _custom.value = null
         refresh()
     }
 
-    fun selectApp(usage: AppUsage?) {
-        _selectedApp.value = usage
+    fun selectCustomPeriod(newCustom: CustomPeriod) {
+        _custom.value = newCustom
+        refresh()
     }
 
     fun openUsageSettings() {
@@ -67,7 +83,7 @@ class UsageViewModel(
             val hasPerm = usageRepository.hasUsagePermission()
             _hasPermission.value = hasPerm
             if (hasPerm) {
-                val periodMillis = _period.value.millis
+                val periodMillis = _custom.value?.millis ?: _period.value.millis
                 _appUsage.value = usageRepository.getAppUsage(periodMillis)
             }
             _batteryLevel.value = usageRepository.getBatteryLevel()

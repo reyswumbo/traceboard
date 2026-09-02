@@ -22,6 +22,12 @@ interface TrackedWordDao {
     @Query("SELECT * FROM tracked_words ORDER BY count DESC")
     fun getAll(): Flow<List<TrackedWord>>
 
+    @Query("SELECT * FROM tracked_words")
+    suspend fun getWords(): List<TrackedWord>
+
+    @Query("UPDATE tracked_words SET count = count + :amount WHERE word = :word COLLATE NOCASE")
+    suspend fun incrementCount(word: String, amount: Int): Int
+
     @Query("UPDATE tracked_words SET count = 0")
     suspend fun resetAllCounts()
 }
