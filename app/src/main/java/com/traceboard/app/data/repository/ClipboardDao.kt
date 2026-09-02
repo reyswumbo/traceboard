@@ -1,0 +1,33 @@
+package com.traceboard.app.data.repository
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
+import com.traceboard.app.data.model.ClipboardItem
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface ClipboardDao {
+    @Insert
+    suspend fun insert(item: ClipboardItem): Long
+
+    @Update
+    suspend fun update(item: ClipboardItem)
+
+    @Delete
+    suspend fun delete(item: ClipboardItem)
+
+    @Query("SELECT * FROM clipboard_items ORDER BY timestamp DESC")
+    fun getAll(): Flow<List<ClipboardItem>>
+
+    @Query("SELECT * FROM clipboard_items WHERE text LIKE '%' || :query || '%' ORDER BY timestamp DESC")
+    fun search(query: String): Flow<List<ClipboardItem>>
+
+    @Insert
+    suspend fun insertAll(items: List<ClipboardItem>)
+
+    @Query("DELETE FROM clipboard_items")
+    suspend fun clear()
+}

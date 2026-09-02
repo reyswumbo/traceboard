@@ -1,0 +1,760 @@
+🚀 TRACEBOARD ANDROID APP CHALLENGE
+
+Build Traceboard — Clipboard, Writing & Usage Analytics
+
+We’re challenging everyone — developers, beginners, and AI-assisted builders — to create Traceboard, a modern native Android utility application that combines clipboard management, writing statistics, keyword tracking, and application usage analytics in one clean experience.
+
+You do not need a professional developer background to participate.
+
+AI assistance is fully allowed.
+
+---
+
+🎯 THE CONCEPT
+
+Traceboard is a personal productivity and activity-tracking utility designed around three main areas:
+
+📋 Clipboard
+
+Automatically save copied text into the application.
+
+✍️ Writing
+
+Track words, characters, and selected keywords while the user writes.
+
+📊 Usage
+
+Analyze how much time the user spends using applications and provide usage statistics.
+
+The application should feel like one polished product, not several unrelated tools combined together.
+
+---
+
+📋 CLIPBOARD MANAGER
+
+Traceboard must be able to automatically save text copied by the user.
+
+▶️ START BUTTON
+
+Clipboard recording should have a clear Start button.
+
+When the user presses:
+
+«Start»
+
+Traceboard begins monitoring and saving newly copied text.
+
+When recording is active, the application should clearly indicate that clipboard tracking is running.
+
+The user should also be able to stop recording.
+
+Saved Clipboard Items
+
+Every copied text entry can be:
+
+- Saved automatically
+- Viewed
+- Edited
+- Deleted
+- Copied again
+- Organized neatly
+- Imported
+- Exported
+
+The clipboard history should be presented in a clean and easy-to-use interface.
+
+---
+
+📦 IMPORT & EXPORT
+
+Clipboard data must be able to be exported and imported so users can keep their data from being lost.
+
+The implementation may use an appropriate format such as:
+
+- JSON
+- TXT
+- CSV
+- Another reasonable structured format
+
+The exported data should contain enough information to restore the clipboard entries.
+
+Example:
+
+Traceboard Backup
+
+Clipboard Entries
+├── Entry 1
+├── Entry 2
+├── Entry 3
+└── Entry 4
+
+Users should be able to:
+
+Export → save backup → reinstall/change device → Import → restore data
+
+The application should handle invalid or corrupted import files gracefully.
+
+---
+
+✏️ EDIT CLIPBOARD TEXT
+
+Users must be able to edit saved clipboard entries.
+
+For example:
+
+Original:
+
+«Hello World»
+
+User edits it to:
+
+«Hello World!»
+
+The updated text should be saved.
+
+Users should also be able to delete individual entries.
+
+A confirmation dialog may be used for destructive actions where appropriate.
+
+---
+
+🔍 SEARCH & ORGANIZATION
+
+The clipboard section should provide a convenient way to find saved text.
+
+Recommended:
+
+- Search
+- Sorting
+- Recent items
+- Long text handling
+- Copy button
+- Delete
+- Edit
+- Import
+- Export
+
+The interface should remain clean even when the user has a large number of clipboard entries.
+
+---
+
+✍️ WRITING & WORD ANALYTICS
+
+Traceboard must provide a dedicated Writing section.
+
+Users can enter or write text inside the application.
+
+The application should analyze the text in real time.
+
+---
+
+🏷️ TRACKED WORDS
+
+Users can manually add words they want Traceboard to track.
+
+For example, the user adds:
+
+«maaf»
+
+Traceboard should count every occurrence of the word regardless of capitalization.
+
+For example:
+
+«maaf
+Maaf
+MAAF
+MaAf»
+
+All of these should be counted as:
+
+«maaf — 4×»
+
+Case should not affect the count.
+
+---
+
+📝 WRITING EXAMPLE
+
+If the user writes:
+
+«maaf maaf»
+
+Traceboard should recognize:
+
+- "maaf" → 2×
+- Total words → 2
+
+The application should also calculate the total number of characters.
+
+For example:
+
+«"maaf maaf"»
+
+contains:
+
+- 2 words
+- 8 letters
+- 9 characters including the space
+
+The exact counting rules should be clearly documented in the README.
+
+---
+
+➕ ADD TRACKED WORDS
+
+Users should be able to add as many words as they want to monitor.
+
+Example:
+
+Tracked Words
+
+maaf       12×
+terima      8×
+halo        5×
+terima kasih 3×
+
+Users should be able to:
+
+- Add tracked words
+- Remove tracked words
+- Edit tracked words
+- View their counts
+- Reset counts where appropriate
+
+Tracking should work in real time while the user writes.
+
+---
+
+📊 WRITING STATISTICS
+
+The Writing section should provide useful statistics such as:
+
+Current Text
+
+- Total words
+- Total characters
+- Total letters
+- Total spaces
+- Tracked word occurrences
+
+Example:
+
+Writing Statistics
+
+Words
+2
+
+Characters
+9
+
+Letters
+8
+
+Tracked Words
+maaf — 2×
+
+The statistics should update dynamically as the text changes.
+
+---
+
+📱 APPLICATION USAGE ANALYTICS
+
+Traceboard must also provide a dedicated section for application usage statistics.
+
+This feature should work independently from the Clipboard Start button.
+
+Important:
+
+«Users do NOT need to press Start to collect application usage statistics.»
+
+The usage statistics should be based on the Android system's available application usage information and permissions.
+
+---
+
+⏱️ USAGE TIME
+
+Traceboard should show how much time the user has spent using applications.
+
+Provide selectable time periods:
+
+Today
+
+Usage during the current day.
+
+7 Days
+
+Usage during the previous 7 days.
+
+1 Month
+
+Usage during the previous month.
+
+All Time
+
+Available accumulated usage data.
+
+---
+
+🕐 PRECISE TIME
+
+Usage time should be displayed using an appropriate level of precision.
+
+For example:
+
+«199 hours 24 minutes 17 seconds»
+
+or:
+
+«24 minutes 32 seconds»
+
+Depending on the duration.
+
+Users should be able to view:
+
+- Hours
+- Minutes
+- Seconds
+
+The application should avoid displaying misleading rounded values when more precise information is available.
+
+---
+
+📱 APP-BY-APP STATISTICS
+
+Users should be able to see individual application usage.
+
+Example:
+
+Application Usage
+
+YouTube
+199h 24m 17s
+
+Chrome
+82h 14m 32s
+
+Instagram
+47h 52m 09s
+
+Telegram
+31h 18m 42s
+
+Each application should display its total usage time.
+
+Users should be able to open an individual application entry to view more detailed statistics.
+
+---
+
+🏆 MOST USED APPLICATIONS
+
+Traceboard should identify applications that consume the most usage time.
+
+For example:
+
+Most Used
+
+1. YouTube       199h 24m
+2. Chrome         82h 14m
+3. Instagram      47h 52m
+4. Telegram       31h 18m
+
+The list should automatically update according to the selected time period.
+
+---
+
+🔋 BATTERY & STORAGE INFORMATION
+
+Where Android permissions and APIs allow it, Traceboard may provide additional device statistics such as:
+
+🔋 Battery
+
+Show applications that have consumed the most battery.
+
+Example:
+
+Battery Usage
+
+YouTube
+32%
+
+Chrome
+18%
+
+Instagram
+14%
+
+💾 Storage
+
+Show applications that consume the most storage.
+
+Example:
+
+Storage Usage
+
+Application       Size
+
+Game A            12.4 GB
+Game B             8.7 GB
+YouTube            3.2 GB
+Chrome             1.8 GB
+
+If a particular statistic cannot be obtained reliably through standard Android APIs, the application should not fabricate the data.
+
+The application should clearly explain unavailable information.
+
+---
+
+🔄 REAL-TIME STATISTICS
+
+Statistics should update as close to real time as the available Android APIs permit.
+
+For example:
+
+YouTube
+
+Current session
+02h 14m 32s
+
+Today
+05h 42m 18s
+
+The interface should make it clear when data was last updated.
+
+A refresh mechanism may also be provided.
+
+---
+
+📈 DASHBOARD
+
+Traceboard should have a modern dashboard that summarizes important information.
+
+For example:
+
+Good evening 👋
+
+Today
+
+Screen usage
+6h 42m
+
+Words written
+1,284
+
+Tracked words
+maaf — 17×
+
+Clipboard
+142 saved items
+
+The exact dashboard design is up to the participant.
+
+The goal is to provide useful information without overwhelming the user.
+
+---
+
+🎨 MODERN UI/UX
+
+The application must use a modern native Android design.
+
+Required:
+
+- Kotlin
+- Jetpack Compose
+- Material 3
+- Modern Android architecture
+- Smooth animations
+- Responsive UI
+- Clean typography
+- Consistent spacing
+- Dark mode
+- Light mode
+- Proper loading states
+- Proper empty states
+- Proper error states
+- Accessible interface
+
+Animations should be smooth and subtle.
+
+Avoid excessive animations that negatively affect performance.
+
+---
+
+🧭 NAVIGATION
+
+The application should have clear navigation between its major sections.
+
+A possible structure:
+
+Traceboard
+
+☰ Navigation
+
+├── Dashboard
+├── Clipboard
+├── Writing
+└── Usage
+
+Participants are free to design a better navigation structure if it improves usability.
+
+---
+
+✨ ANIMATIONS
+
+The application should include tasteful animations and transitions.
+
+Examples:
+
+- Screen transitions
+- Expanding/collapsing sections
+- Clipboard item insertion
+- Deletion animation
+- Statistics updates
+- Bottom sheets
+- Dialog transitions
+- Navigation animations
+
+Animations should feel natural and responsive, following modern Android UI principles.
+
+---
+
+🇮🇩 LANGUAGE
+
+The entire application must use Bahasa Indonesia.
+
+All user-facing text must be in Indonesian, including:
+
+- Navigation
+- Buttons
+- Settings
+- Clipboard
+- Writing
+- Usage
+- Statistics
+- Error messages
+- Dialogs
+- Empty states
+- Permissions
+- Notifications
+- Help text
+
+Technical terms that are commonly used in Android may remain in English when appropriate.
+
+---
+
+📄 README.md
+
+The project's README.md must be written entirely in Bahasa Indonesia.
+
+The README should explain:
+
+- Tentang Traceboard
+- Fitur aplikasi
+- Cara instalasi
+- Cara menjalankan project
+- Arsitektur aplikasi
+- Teknologi yang digunakan
+- Struktur project
+- Clipboard implementation
+- Writing analytics
+- Keyword tracking
+- Usage statistics
+- Battery information
+- Storage information
+- Permissions
+- Privacy considerations
+- Import/export
+- GitHub Actions
+- Cara build APK/AAB
+- Troubleshooting
+- Batasan Android API jika ada
+
+---
+
+🔐 PERMISSIONS & PRIVACY
+
+The application must clearly explain why each sensitive Android permission is required.
+
+For example, if application usage statistics require a specific Android permission or user-enabled access, the application should provide a clear explanation and guide the user through the process.
+
+Do not request unnecessary permissions.
+
+The application should follow the principle:
+
+«Only request the permissions that are actually required.»
+
+Participants should also clearly document permission requirements in the README.
+
+---
+
+🤖 AI IS FULLY ALLOWED
+
+AI assistance is completely allowed.
+
+Participants may use AI for:
+
+- Learning Kotlin
+- Android development
+- Jetpack Compose
+- Material 3
+- UI/UX design
+- Coding
+- Debugging
+- Clipboard implementation
+- Text analysis
+- Android usage statistics
+- API research
+- Testing
+- GitHub Actions
+- Optimization
+- Documentation
+- README.md
+
+You do not need to be a professional developer.
+
+If you can learn, experiment, and use AI to help you build the application, you can participate.
+
+«⚠️ AI assistance does not remove responsibility for the final result. Participants are responsible for ensuring that their implementation works correctly and follows the challenge requirements.»
+
+---
+
+💻 GITHUB & GITHUB ACTIONS
+
+Participants must:
+
+1. Upload the complete Traceboard project to GitHub.
+2. Keep the repository available for review.
+3. Configure GitHub Actions.
+4. Ensure the Android project can be built successfully.
+5. Provide the generated APK/AAB through GitHub Actions artifacts or a GitHub Release.
+6. Include the complete README.md in Bahasa Indonesia.
+7. Clearly document the implementation.
+
+The review team must be able to inspect:
+
+- Source code
+- Architecture
+- Dependencies
+- Clipboard implementation
+- Writing analytics
+- Usage analytics
+- UI implementation
+- Permissions
+- GitHub Actions
+- Build configuration
+- Documentation
+
+---
+
+🎯 EVALUATION
+
+Submissions will be evaluated based on:
+
+📱 Android Development
+
+- Native Android implementation
+- Kotlin
+- Jetpack Compose
+- Material 3
+- Architecture
+- Code quality
+- Build reliability
+
+🎨 UI/UX
+
+- Visual quality
+- Modern design
+- Usability
+- Navigation
+- Typography
+- Spacing
+- Accessibility
+- Dark/light mode
+- Animation quality
+
+📋 Clipboard
+
+- Automatic saving
+- Start/Stop functionality
+- Editing
+- Deleting
+- Searching
+- Import/export
+- Data persistence
+- Reliability
+
+✍️ Writing
+
+- Real-time word counting
+- Character counting
+- Tracked word counting
+- Case-insensitive matching
+- Custom tracked words
+- Statistics accuracy
+
+📊 Usage Analytics
+
+- Daily statistics
+- 7-day statistics
+- Monthly statistics
+- Available historical statistics
+- App-by-app usage
+- Precise time display
+- Ranking
+- Refresh/update behavior
+- Battery information where supported
+- Storage information where supported
+
+⚡ Performance
+
+- Startup time
+- Responsiveness
+- Memory usage
+- Battery efficiency
+- Application size
+- Efficient data storage
+
+📄 Documentation
+
+- README quality
+- Indonesian documentation
+- Architecture explanation
+- Permission explanation
+- Build instructions
+- GitHub Actions
+- Limitations
+
+---
+
+🏆 QUALITY OVER QUANTITY
+
+You do not need to implement every possible feature.
+
+A smaller application with:
+
+excellent UI/UX + accurate statistics + good performance + clean architecture
+
+may outperform a larger application filled with unnecessary features.
+
+The goal is to create something that feels like a real, polished Android utility product.
+
+---
+
+💰 CHALLENGE
+
+Build the best version of Traceboard you can.
+
+Make it:
+
+Useful.
+Fast.
+Beautiful.
+Accurate.
+Lightweight.
+
+🚀 Build Traceboard.
+
+📋 Track your clipboard.
+
+✍️ Understand your writing.
+
+📊 Understand your app usage.
