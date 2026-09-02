@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-enum class ThemeMode { DEFAULT, INK }
+enum class ThemeMode { DEFAULT, COLOR_1 }
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color(0xFFD0BCFF),
@@ -63,7 +63,7 @@ private val LightColorScheme = lightColorScheme(
     onErrorContainer = Color(0xFF410E0B)
 )
 
-private val InkLight = lightColorScheme(
+private val Color1Light = lightColorScheme(
     primary = Color(0xFF00796B),
     onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFFB2DFDB),
@@ -88,7 +88,7 @@ private val InkLight = lightColorScheme(
     onErrorContainer = Color(0xFF410002)
 )
 
-private val InkDark = darkColorScheme(
+private val Color1Dark = darkColorScheme(
     primary = Color(0xFF4DB6AC),
     onPrimary = Color(0xFF003731),
     primaryContainer = Color(0xFF005048),
@@ -121,8 +121,8 @@ fun TraceboardTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = when (themeMode) {
-        ThemeMode.INK -> {
-            if (darkTheme) InkDark else InkLight
+        ThemeMode.COLOR_1 -> {
+            if (darkTheme) Color1Dark else Color1Light
         }
         ThemeMode.DEFAULT -> when {
             dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {

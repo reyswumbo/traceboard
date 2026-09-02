@@ -24,8 +24,7 @@ enum class UsagePeriod(val label: String, val millis: Long) {
 data class CustomPeriod(val label: String, val millis: Long) {
     companion object {
         val options: List<CustomPeriod> =
-            (1..12).map { n -> CustomPeriod("$n Bulan", n * 30L * 24 * 3600 * 1000) } +
-                CustomPeriod("1 Tahun", 365L * 24 * 3600 * 1000)
+            (1..6).map { n -> CustomPeriod("$n Bulan", n * 30L * 24 * 3600 * 1000) }
     }
 }
 
