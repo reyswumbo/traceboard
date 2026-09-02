@@ -57,8 +57,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClipboardScreen(viewModel: ClipboardViewModel) {
-    val items by viewModel.items.collectAsStateWithLifecycle()
-    val isRecording by viewModel.isRecording.collectAsStateWithLifecycle()
+    val items by viewModel.items.collectAsStateWithLifecycle(initialValue = emptyList<ClipboardItem>())
+    val isRecording by viewModel.isRecording.collectAsStateWithLifecycle(initialValue = false)
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var editingItem by remember { mutableStateOf<ClipboardItem?>(null) }
