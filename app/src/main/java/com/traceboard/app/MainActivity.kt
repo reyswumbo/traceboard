@@ -19,9 +19,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -47,9 +49,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             TraceboardTheme {
                 val app = application as TraceboardApplication
+                val settingsRepo = remember { com.traceboard.app.data.repository.SettingsRepository(app) }
+                val themeMode by settingsRepo.themeMode.collectAsStateWithLifecycle(initialValue = com.traceboard.app.ui.theme.ThemeMode.DEFAULT)
                 val factory = factory(app)
                 RequestNotificationPermissionIfNeeded()
-                TraceboardApp(factory)
+                com.traceboard.app.ui.theme.TraceboardTheme(themeMode = themeMode) {
+                    TraceboardApp(factory)
+                }
             }
         }
     }

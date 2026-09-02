@@ -46,6 +46,7 @@ Ketiga fitur tersebut dirancang agar terasa seperti satu produk yang utuh dan *p
   - Notifikasi karena statistik per aplikasi bergantung pada izin Akses Penggunaan Aplikasi.
 - **Bahasa**: Seluruh antarmuka menggunakan Bahasa Indonesia.
 - **Mode gelap & terang** (mengikuti sistem, mendukung *dynamic color* di Android 12+).
+- **Dua tema**: **Default** (Material You klasik) dan **Liquid Ink** (teal/cyan yang tajam). Pilih tema dari ikon palet di dasbor.
 - Aktivitas di negara kosong (*empty state*) dan instruksi izin yang jelas.
 
 ---
