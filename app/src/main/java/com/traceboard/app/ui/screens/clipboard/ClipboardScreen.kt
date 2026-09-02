@@ -164,7 +164,8 @@ fun ClipboardScreen(viewModel: ClipboardViewModel) {
                 }
             )
 
-            if (selectedFolder == null) {
+            val folderId = selectedFolder
+            if (folderId == null) {
                 TextButton(
                     onClick = {
                         viewModel.clearAll()
@@ -177,14 +178,14 @@ fun ClipboardScreen(viewModel: ClipboardViewModel) {
                     Text("Hapus semua", modifier = Modifier.padding(start = 8.dp))
                 }
             } else {
-                val folder = folders.firstOrNull { it.id == selectedFolder }
+                val folder = folders.firstOrNull { it.id == folderId }
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
-                        onClick = { viewModel.addCurrentClipboardToFolder(selectedFolder) },
+                        onClick = { viewModel.addCurrentClipboardToFolder(folderId) },
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Filled.ContentPaste, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -325,6 +326,7 @@ fun ClipboardScreen(viewModel: ClipboardViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FolderBar(
     folders: List<ClipboardFolder>,
