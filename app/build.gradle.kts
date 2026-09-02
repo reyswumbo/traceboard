@@ -21,6 +21,15 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            val ksFile = rootProject.file("traceboard-keystore.jks")
+            if (ksFile.exists()) {
+                signingConfig = signingConfigs.create("release") {
+                    storeFile = ksFile
+                    storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "traceboard123"
+                    keyAlias = System.getenv("KEY_ALIAS") ?: "traceboard"
+                    keyPassword = System.getenv("KEY_PASSWORD") ?: "traceboard123"
+                }
+            }
         }
     }
     compileOptions {

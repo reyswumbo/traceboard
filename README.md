@@ -206,7 +206,7 @@ Hasil build:
 - Release: `app/build/outputs/apk/release/`
 - AAB: `app/build/outputs/bundle/release/`
 
-Release default **tidak ditandatangani** (unsigned) — untuk distribusi, tambahkan konfigurasi *signingConfig*. Debug APK menggunakan *debug keystore* bawaan Android Studio dan dapat langsung dipasang.
+**Hasil dari GitHub Actions sudah ditandatangani** oleh keystore yang dibuat otomatis saat CI, sehingga APK release (`traceboard-release.apk`) langsung bisa dipasang. Saat instalasi, Android akan menampilkan konfirmasi izin instal dari sumber tidak dikenal — pilih **Setujui/Izinkan**. Untuk distribusi publik, ganti keystore CI dengan keystore Anda sendiri.
 
 ---
 
