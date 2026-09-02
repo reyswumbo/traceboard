@@ -49,17 +49,22 @@ class UsageRepository(private val context: Context) {
             ?: return emptyList()
         val pm = context.packageManager
 
-        return stats
+        // Aggregate by packageName: sum totalTime, take max lastTimeUsed
+        val grouped = stats
             .filter { it.totalTimeInForeground > 0 || it.totalTimeVisible > 0 }
-            .map {
+            .groupBy { it.packageName }
+            .map { (pkg, list) ->
+                val totalTime = list.sumOf { if (it.totalTimeVisible > 0) it.totalTimeVisible else it.totalTimeInForeground }
+                val lastTimeUsed = list.maxByOrNull { it.lastTimeUsed }?.lastTimeUsed ?: 0L
                 AppUsage(
-                    packageName = it.packageName,
-                    appName = appLabel(pm, it.packageName),
-                    totalTime = if (it.totalTimeVisible > 0) it.totalTimeVisible else it.totalTimeInForeground,
-                    lastTimeUsed = it.lastTimeUsed
+                    packageName = pkg,
+                    appName = appLabel(pm, pkg),
+                    totalTime = totalTime,
+                    lastTimeUsed = lastTimeUsed
                 )
             }
-            .sortedByDescending { it.totalTime }
+
+        return grouped.sortedByDescending { it.totalTime }
     }
 
     fun getSessionTime(packageName: String): Long {
